@@ -1,0 +1,198 @@
+#include<stdio.h>
+#include<string.h>
+#define SIZE 10
+
+struct client{
+  long long phone;
+  char name[30];
+  int used;
+};
+
+struct client table[SIZE];
+
+int hashFunc1(long long key){
+  return key % SIZE;
+}
+
+int hashFunc2(long long key){
+  return 7 - (key % 7);
+}
+
+void initializedTable(){
+  for(int i = 0; i<SIZE; i++){
+    table[i].used = 0;
+  }
+}
+
+void display(){
+  printf("\nINDEX\tNAME\t\tPHONE");
+  for(int i = 0; i<SIZE; i++){
+    if(table[i].used){
+      printf("\n[%d]\t%s\t\t%lld", i, table[i].name, table[i].phone);
+    }
+    else{
+      printf("\n[%d]\t----", i);
+    }
+  }
+}
+
+void linearInsert(long long phone, char name[30]){
+  int i = 0;
+  int index = hashFunc1(phone);
+  while(table[(index + i)%SIZE].used && i<SIZE){
+    i++;
+  }
+  if(i == SIZE){
+    printf("\nTable Is Full!\n");
+  }else{
+    int pos = (index + i)%SIZE;
+    strcpy(table[pos].name, name);
+    table[pos].phone = phone;
+    table[pos].used = 1;
+    printf("Datails inserted Using linear Probing!!");
+  }
+}
+
+int searchLinear(long long phone){
+  int index = hashFunc1(phone);
+  for(int i = 0; i<SIZE; i++){
+    int pos = (index + i) % SIZE;
+    if(table[pos].used && table[pos].phone == phone){
+      return pos;
+    }
+  }
+  return -1;
+}
+
+void insertquadratic(long long phone, char name[]){
+  int i = 0;
+  int index = hashFunc1(phone);
+  while(table[(index + i*i)%SIZE].used && i<SIZE){
+    i++;
+  }
+  if(i == SIZE){
+    printf("\nTable is Full\n");
+  }
+  else{
+    int pos = (index + i * i)%SIZE;
+    strcpy(table[pos].name, name);
+    table[pos].phone = phone;
+    table[pos].used = 1;
+    printf("\nDatails inserted using quadratic probing.\n");
+  }
+}
+
+int searchquadratic(long long phone){
+  int index = hashFunc1(phone);
+  for(int i = 0; i<SIZE; i++){
+    int pos = (index + i * i)%SIZE;
+    if(table[pos].used && table[pos].phone == phone){
+      return pos;
+    }
+  }
+  return -1;
+}
+
+void insertDoubleHashing(long long phone, char name[]){
+  int i = 0;
+  int index1 = hashFunc1(phone);
+  int index2 = hashFunc2(phone);
+  while(table[(index1 + i*index2)%7].used && i<SIZE){
+    i++;
+  }
+  if(i == SIZE){
+    printf("\nTable is Full\n");
+  }else{
+    int pos = (index1 + i * index2)%SIZE;
+    strcpy(table[pos].name, name);
+    table[pos].phone = phone;
+    table[pos].used = 1;
+    printf("\nDetails inserted using Doublehashing\n");
+  }
+}
+
+int search_in_doubleHashing(long long phone){
+  int index1 = hashFunc1(phone);
+  int index2 = hashFunc2(phone);
+  for(int i = 0; i<SIZE; i++){
+    int pos = (index1 + i * index2)%SIZE;
+    if(table[pos].used && table[pos].phone == phone){
+      return pos;
+    }
+  }
+  return -1;
+}
+
+int main(){
+  int choice, method, pos;
+  long long phone;
+  char name[30];
+
+  initializedTable();
+
+  do{
+    printf("\n===Telephone Directory===\n");
+    printf("\n1. INSERT RECORD ");
+    printf("\n2. SEARCH RECORD ");
+    printf("\n3. DISPLAY TABLE ");
+    printf("\n0. Exit ");
+    printf("\nEnter Your choice: ");
+    scanf("%d", &choice);
+
+    switch(choice){
+      case 1:
+        printf("\nEnter Client Name:");
+        scanf("%s", name);
+        printf("\nEnter Phone Number:");
+        scanf("%lld", &phone);
+        printf("Choose Collision Handling Methode:");
+        printf("\n1. Linear Probling.\n2. Quadratic Probing.\n3. Double Hashing.");
+        printf("Enter Choice: ");
+        scanf("%d", &method);
+        if(method == 1){
+          linearInsert(phone, name);
+        }else if(method == 2){
+          insertquadratic(phone, name);
+        }else if(method == 3){
+          insertDoubleHashing(phone, name);
+        }else{
+          printf("\nInvalid Input...\n");
+        }
+        break;
+
+      case 2:
+        printf("\nEnter Client phone Number:");
+        scanf("%lld", &phone);
+        printf("\nChoose Methode used for insertion:");
+        scanf("%d", &method);
+        if(method == 1){
+          pos = searchLinear(phone);
+        }else if(method == 2){
+          pos = searchquadratic(phone);
+        }else if(method == 3){
+          pos = search_in_doubleHashing(phone);
+        }else{
+          printf("\nEnter Valid Input..\n");
+        }
+        if(pos != -1){
+          printf("\nRecord Found at index %d: %s - %lld", pos, table[pos].name, table[pos].phone);
+        }
+        else{
+          printf("\nRecord is not found.");
+        }
+        break;
+
+      case 3:
+        display();
+        break;
+
+      case 0:
+        printf("\nExiting Program..!");
+        break;
+
+      default:
+        printf("\nInvalid Choice. Try Again. \n");
+    }
+  }while(choice != 0);
+  return 0;
+}

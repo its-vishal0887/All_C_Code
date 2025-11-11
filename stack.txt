@@ -1,0 +1,109 @@
+#include<stdio.h>
+#include<ctype.h>
+#include<math.h>
+
+char stack[20];
+int top = -1;
+
+void push(char x){
+    stack[++top] = x;
+}
+
+char pop(){
+    if(top == -1){
+        return -1;
+    }
+    else{
+        return stack[top--];
+    }
+}
+
+int priority(char x){
+    if(x == '('){
+        return 0;
+    }
+    else if(x == '+' || x == '-'){
+        return 1;
+    }
+    else if(x == '*' || x == '/'){
+        return 2;
+    }else if(x == '^'){
+        return 3;
+    }else{
+        return -1;
+    }
+}
+
+int evalPostfix(char exp[]){
+    int s[20], top = -1;
+    int n1, n2, res;
+
+    for(int i = 0; exp[i] != '\0'; i++){
+        char c = exp[i];
+        if(isdigit(c)){
+            s[++top] = c - '0';
+        }
+        else{
+            if(top < 1){
+                printf("Invalid postfix expression!\n");
+                return 0;
+            }
+            n1 = s[top--];
+            n2 = s[top--];
+
+            switch(c){
+                case '+' : res = n2 + n1; break;
+                case '-' : res = n2 + n1; break;
+                case '*' : res = n2 + n1; break;
+                case '/' : res = n2 + n1; break;
+                case '^' : res = n2 + n1; break;
+                default: res = 0;
+
+            }
+            s[++top] = res;
+        }
+    }
+    return s[top];
+}
+
+int main(){
+    char exp[50], postfix[50];
+    char *e, x;
+    int i = 0;
+
+    printf("Enter Postfix expression (use single digit numbers:)");
+    scanf("%s", exp);
+
+    e = exp;
+
+    while(*e != '\0'){
+        if(isalnum(*e)){
+            postfix[i++] = *e;
+        }
+        else if(*e == '('){
+            push(*e);
+        }else if(*e == ')'){
+            while((x = pop()) != '('){
+                postfix[i++] = x;
+            }
+        }else{
+            while(top != -1 && priority(stack[top]) >= priority(*e)){
+                postfix[i++] = pop();
+            }
+            push(*e);
+        }
+        e++;
+    }
+
+    while(top != -1){
+        postfix[i++] = pop();
+    }
+    postfix[i] = '\0';
+
+    printf("\nPostfix Expression: %s\n", postfix);
+
+    int result = evalPostfix(postfix);
+    printf("Result: %d\n", result);
+
+    return 0;
+}

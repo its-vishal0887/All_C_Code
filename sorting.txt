@@ -1,0 +1,90 @@
+#include <stdio.h>
+
+// ---------- Selection Sort ----------
+void selectionSort(float arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int min = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[min]) {
+                min = j;
+            }
+        }
+        float temp = arr[i];
+        arr[i] = arr[min];
+        arr[min] = temp;
+    }
+}
+
+// ---------- Bubble Sort ----------
+void bubbleSort(float arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - 1 - i; j++) {
+            if (arr[j] > arr[j + 1]) {
+                float temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+// ---------- Display Top 5 Scores ----------
+void displayTopFive(float arr[], int n) {
+    if (n == 0) {
+        printf("No scores available!\n");
+        return;
+    }
+
+    int count = (n < 5) ? n : 5;
+    printf("\nTop %d Scores:\n", count);
+    for (int i = n - 1; i >= n - count; i--) {
+        printf("%.2f\n", arr[i]);
+    }
+}
+
+// ---------- Main Function ----------
+int main() {
+    float marks[50];
+    int n, choice;
+
+    printf("Enter number of students: ");
+    scanf("%d", &n);
+
+    printf("Enter FY students' percentages:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%f", &marks[i]);
+    }
+
+    do {
+        printf("\n==== MENU ====\n");
+        printf("1. Selection Sort (Ascending)\n");
+        printf("2. Bubble Sort (Ascending)\n");
+        printf("0. Exit\n");
+        printf("Enter Your Choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                selectionSort(marks, n);
+                printf("\nArray Sorted using Selection Sort.\n");
+                displayTopFive(marks, n);
+                break;
+
+            case 2:
+                bubbleSort(marks, n);
+                printf("\nArray Sorted using Bubble Sort.\n");
+                displayTopFive(marks, n);
+                break;
+
+            case 0:
+                printf("Exiting program..\n");
+                break;
+
+            default:
+                printf("Enter a valid choice.\n");
+        }
+
+    } while (choice != 0);
+
+    return 0;
+}

@@ -1,0 +1,209 @@
+/* flights.c
+   Weighted directed graph for flight paths between cities.
+   Menu-driven: create graph, add flights, display matrix/list,
+   show direct flights from a city, and compute shortest-cost path (Dijkstra).
+*/
+
+#include <stdio.h>
+#include <string.h>
+#include <limits.h>
+
+#define MAXC 20        /* max cities */
+#define NAME_LEN 30
+#define INF INT_MAX/4  /* large value for "no edge" */
+
+/* Graph storage */
+int n = 0;                    /* number of cities */
+char city[MAXC][NAME_LEN];
+int weight[MAXC][MAXC];       /* adjacency matrix: weight[i][j] = cost from i->j or INF */
+
+void initMatrix() {
+    for (int i = 0; i < MAXC; i++)
+        for (int j = 0; j < MAXC; j++)
+            weight[i][j] = INF;
+}
+
+/* Utility: find index of city by name, -1 if not found */
+int findCityIndex(const char *name) {
+    for (int i = 0; i < n; i++)
+        if (strcmp(city[i], name) == 0) return i;
+    return -1;
+}
+
+/* Create graph: enter number of cities and their names */
+void createGraph() {
+    printf("Enter number of cities (max %d): ", MAXC);
+    if (scanf("%d", &n) != 1 || n <= 0 || n > MAXC) {
+        printf("Invalid number.\n");
+        n = 0;
+        return;
+    }
+    for (int i = 0; i < n; i++) {
+        printf("Enter name of city %d: ", i+1);
+        scanf("%s", city[i]);
+    }
+    initMatrix();
+    printf("Graph created with %d cities.\n", n);
+}
+
+/* Add a directed flight (edge) from src -> dest with given cost */
+void addFlight() {
+    char srcName[NAME_LEN], dstName[NAME_LEN];
+    int cost;
+    if (n == 0) { printf("Create graph first.\n"); return; }
+
+    printf("Enter source city name: ");
+    scanf("%s", srcName);
+    printf("Enter destination city name: ");
+    scanf("%s", dstName);
+    printf("Enter cost (time/fuel): ");
+    scanf("%d", &cost);
+
+    int u = findCityIndex(srcName);
+    int v = findCityIndex(dstName);
+    if (u == -1 || v == -1) {
+        printf("One or both city names not found.\n");
+        return;
+    }
+    weight[u][v] = cost;
+    printf("Flight added: %s -> %s with cost %d\n", city[u], city[v], cost);
+}
+
+/* Display adjacency matrix of weights */
+void displayMatrix() {
+    if (n == 0) { printf("Graph empty. Create graph first.\n"); return; }
+    printf("\nAdjacency Matrix (INF means no direct flight):\n     ");
+    for (int j = 0; j < n; j++) printf("%8s", city[j]);
+    printf("\n");
+    for (int i = 0; i < n; i++) {
+        printf("%-5s", city[i]);
+        for (int j = 0; j < n; j++) {
+            if (weight[i][j] == INF) printf("%8s", "INF");
+            else printf("%8d", weight[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+/* Display adjacency list (only existing flights) */
+void displayAdjList() {
+    if (n == 0) { printf("Graph empty.\n"); return; }
+    printf("\nAdjacency List (direct flights):\n");
+    for (int i = 0; i < n; i++) {
+        printf("%s ->", city[i]);
+        int any = 0;
+        for (int j = 0; j < n; j++) {
+            if (weight[i][j] != INF) {
+                printf(" (%s, cost=%d)", city[j], weight[i][j]);
+                any = 1;
+            }
+        }
+        if (!any) printf(" None");
+        printf("\n");
+    }
+}
+
+/* List direct flights from a given city */
+void directFlightsFromCity() {
+    char name[NAME_LEN];
+    if (n == 0) { printf("Graph empty.\n"); return; }
+    printf("Enter city name: ");
+    scanf("%s", name);
+    int u = findCityIndex(name);
+    if (u == -1) { printf("City not found.\n"); return; }
+    printf("Direct flights from %s:\n", city[u]);
+    int found = 0;
+    for (int v = 0; v < n; v++) {
+        if (weight[u][v] != INF) {
+            printf("  -> %s (cost=%d)\n", city[v], weight[u][v]);
+            found = 1;
+        }
+    }
+    if (!found) printf("  No direct flights.\n");
+}
+
+/* Dijkstra's algorithm for shortest-cost path from source to all vertices */
+void dijkstra(int src, int dist[], int parent[]) {
+    int visited[MAXC] = {0};
+    for (int i = 0; i < n; i++) {
+        dist[i] = INF;
+        parent[i] = -1;
+    }
+    dist[src] = 0;
+    for (int count = 0; count < n; count++) {
+        int u = -1;
+        int best = INF;
+        for (int i = 0; i < n; i++) {
+            if (!visited[i] && dist[i] < best) {
+                best = dist[i]; u = i;
+            }
+        }
+        if (u == -1) break;
+        visited[u] = 1;
+        for (int v = 0; v < n; v++) {
+            if (!visited[v] && weight[u][v] != INF && dist[u] + weight[u][v] < dist[v]) {
+                dist[v] = dist[u] + weight[u][v];
+                parent[v] = u;
+            }
+        }
+    }
+}
+
+/* Show shortest path from source to destination (if exists) */
+void shortestPath() {
+    if (n == 0) { printf("Graph empty.\n"); return; }
+    char sname[NAME_LEN], dname[NAME_LEN];
+    printf("Enter source city: "); scanf("%s", sname);
+    printf("Enter destination city: "); scanf("%s", dname);
+    int s = findCityIndex(sname);
+    int d = findCityIndex(dname);
+    if (s == -1 || d == -1) { printf("City name(s) not found.\n"); return; }
+
+    int dist[MAXC], parent[MAXC];
+    dijkstra(s, dist, parent);
+    if (dist[d] == INF) {
+        printf("No path from %s to %s.\n", city[s], city[d]);
+        return;
+    }
+    /* reconstruct path */
+    int path[MAXC], len = 0;
+    int cur = d;
+    while (cur != -1) { path[len++] = cur; cur = parent[cur]; }
+    printf("Shortest cost from %s to %s = %d\nPath: ", city[s], city[d], dist[d]);
+    for (int i = len - 1; i >= 0; i--) {
+        printf("%s", city[path[i]]);
+        if (i) printf(" -> ");
+    }
+    printf("\n");
+}
+
+int main() {
+    int choice;
+    initMatrix();
+
+    do {
+        printf("\n===== Flight Graph Menu =====\n");
+        printf("1. Create graph (enter cities)\n");
+        printf("2. Add flight (directed edge with cost)\n");
+        printf("3. Display adjacency matrix\n");
+        printf("4. Display adjacency list (direct flights)\n");
+        printf("5. Show direct flights from a city\n");
+        printf("6. Shortest-cost path between two cities (Dijkstra)\n");
+        printf("0. Exit\n");
+        printf("Enter choice: ");
+        if (scanf("%d", &choice) != 1) return 0;
+
+        switch (choice) {
+            case 1: createGraph(); break;
+            case 2: addFlight(); break;
+            case 3: displayMatrix(); break;
+            case 4: displayAdjList(); break;
+            case 5: directFlightsFromCity(); break;
+            case 6: shortestPath(); break;
+            case 0: printf("Exiting...\n"); break;
+            default: printf("Invalid choice.\n");
+        }
+    } while (choice != 0);
+
+    return 0;
+}

@@ -1,0 +1,255 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+struct node{
+  int PRN;
+  char name[30];
+  struct node * next;
+};
+
+struct node *createNode(int prn, char name[]){
+  struct node *newNode = (struct node *)malloc(sizeof(struct node));
+ 
+  strcpy(newNode->name, name);
+  newNode->PRN = prn;
+  newNode->next = NULL;
+  return newNode;
+}
+
+struct node *addPresident(struct node* head, int prn, char name[]){
+  struct node *president = createNode(prn, name);
+  president->next = head;
+  printf("\nPresident added succefully!!");
+  return president;
+}
+
+struct node *addSecretory(struct node* head, int prn , char name[]){
+  struct node *sec = createNode(prn, name);
+  if(head == NULL){
+    return sec;
+  }
+  struct node* temp = head;
+  while(temp->next != NULL){
+    temp = temp->next;
+  }
+  temp->next = sec;
+  printf("Secretery Added Successfully!!\n");
+  return head;
+};
+
+struct node *addmem(struct node* head, int prn, char name[], int idx){
+  if(head == NULL){
+    printf("Add a president first!\n");
+    return head;
+  }
+  struct node* member = createNode(prn, name);
+  struct node* temp = head;
+
+  for(int i = 0; i<idx-1; i++){
+    temp = temp->next;
+  }
+  member->next = temp->next;
+  temp->next = member;
+  return head;
+};
+
+struct node *deletePresident(struct node* head){
+  if(head == NULL){
+    printf("No president to delete.\n");
+    return head;
+  }
+
+  struct node* temp = head;
+  head = head->next;
+  free(temp);
+  printf("President Deleted Successfully!!\n");
+  return head;
+};
+
+struct node* deleteSecretary(struct node *head){
+  if(head == NULL || head->next == NULL){
+    printf("Secretary not found!\n");
+    return head;
+  }
+  struct node *p = head, *q = head->next;
+  while(q->next != NULL){
+    p = p->next;
+    q = q->next;
+  }
+  p->next = NULL;
+  free(q);
+  printf("Secretary Deleted Successfully!!\n");
+  return head;
+}
+
+struct node* deletemem(struct node* head, int prn){
+  if(head == NULL){
+    printf("List is empty.\n");
+    return head;
+  }
+  struct node* p = head, *q = head->next;
+  while(q != NULL && q->PRN != prn){
+    q = q->next;
+    p = p->next;
+  }
+
+  if(q == NULL){
+    printf("Member is not found.\n");
+    return head;
+  }
+  p->next = q->next;
+  free(q);
+  printf("Member deleted successfully!\n");
+  return head;
+}
+
+void display(struct node* head){
+  if(head == NULL){
+    printf("\nNo members in the club.\n");
+    return;
+  }
+  printf("\n---Club Members---\n");
+  struct node *temp = head;
+  while(temp != NULL){
+    printf("PRN: %d\tName: %s\n", temp->PRN, temp->name);
+    temp = temp->next;
+  }
+}
+
+void countMembers(struct node* head){
+  int count = 0;
+  struct node *temp = head;
+  while(temp != NULL){
+    count++;
+    temp = temp->next;
+  }
+  printf("\nTotal members in club: %d\n", count);
+}
+
+struct node* concatenate(struct node *head1, struct node* head2){
+  if(head1 == NULL){
+    return head2;
+  }
+  struct node *temp = head1;
+  while(temp->next != NULL){
+    temp = temp->next;
+  }
+  temp->next = head2;
+  printf("\nTwo Divisions concatenated successfully!\n");
+  return head1;
+}
+
+int main(){
+  struct node* div_A = NULL;
+  struct node* div_B = NULL;
+  int choice, prn, idx,n;
+  char name[30];
+
+  do{
+    printf("\n=======Pinnacle Club Menu=====\n");
+    printf("1. Add President\n");
+    printf("2. Add Secretery\n");
+    printf("3. Add Members\n");
+    printf("4. Delete Presidednt\n");
+    printf("5. Delete Secretery\n");
+    printf("6. Delete Member\n");
+    printf("7. Display Members\n");
+    printf("8. Count Members\n");
+    printf("9. Create Division B\n");
+    printf("10. Concatenate Division A & B\n");
+    printf("0. Exit\n");
+    printf("Enter Your Choice:");
+    scanf("%d", &choice);
+
+    switch(choice){
+      case 1:
+        printf("\nEnter Prn Number\n");
+        scanf("%d", &prn);
+        printf("\nEnter Name:");
+        scanf("%s", name);
+        div_A = addPresident(div_A, prn ,name);
+        break;
+      case 2:
+        printf("\nEnter Prn Number:");
+        scanf("%d", &prn);
+        printf("\nEnter Name: ");
+        scanf("%s", name);
+        div_A = addSecretory(div_A,prn, name);
+        break;
+
+      case 3:
+        printf("\nEnter member Prn Number:");
+        scanf("%d", &prn);
+        printf("\nEnter Name:");
+        scanf("%s",name);
+        printf("\nEnter Index:");
+        scanf("%d", &idx);
+        div_A = addmem(div_A, prn, name, idx);
+        break;
+      
+      case 4:
+        div_A = deletePresident(div_A);
+        break;
+
+      case 5:
+        div_A = deleteSecretary(div_A);
+        break;
+
+      case 6:
+        printf("Enter PRN To delete:");
+        scanf("%d", &prn);
+        div_A = deletemem(div_A, prn);
+        break;
+
+      case 7:
+        display(div_A);
+        break;
+
+      case 8:
+        countMembers(div_A);
+        break;
+
+      case 9:
+        
+        printf("\nEnter Number of members in div_B:");
+        scanf("%d", &n);
+        for(int i = 0; i<n; i++){
+          printf("\nEnter PRN: ");
+          scanf("%d", &prn);
+          printf("\nEnter Name:");
+          scanf("%s", name);
+
+          struct node* newNode = createNode(prn, name);
+          if(div_B == NULL){
+            div_B = newNode;
+          }else{
+            struct node *temp = div_B;
+            while(temp->next != NULL){
+              temp = temp->next;
+            }
+            temp->next = newNode;
+          }
+          
+        }
+        printf("\nDivision B created Successfully\n");
+        break;
+
+      case 10:
+        div_A = concatenate(div_A, div_B);
+        printf("\nAfter Concatenation:\n");
+        display(div_A);
+        break;
+      
+      case 0:
+        printf("\nExiting Program..\n");
+        break;
+
+      default:
+        printf("\nInvalid Choice! Try Again.\n");
+        
+    }
+
+  }while(choice != 0);
+  return 0;
+}

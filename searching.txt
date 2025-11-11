@@ -1,0 +1,80 @@
+#include <stdio.h>
+
+int linearSearch(int arr[], int key, int n) {
+    for (int i = 0; i < n; i++) {
+        if (arr[i] == key) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int binarySearch(int arr[], int key, int n) {
+    int low = 0;
+    int high = n - 1;
+    while (low <= high) {
+        int mid = (low + high) / 2;
+        if (arr[mid] == key) {
+            return mid;
+        } else if (arr[mid] < key) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+    return -1;
+}
+
+int main() {
+    int arr[50], key, choice, n;
+
+    printf("\nEnter No Of Students: ");
+    scanf("%d", &n);
+    printf("\nEnter Roll Numbers: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &arr[i]);
+    }
+
+    do {
+        printf("\n=== MENU ====\n");
+        printf("1. Linear Search (Random Order)\n");
+        printf("2. Binary Search (Sorted Order)\n");
+        printf("0. Exit\n");
+        printf("Enter Your Choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 0:
+                printf("Exiting Program..\n");
+                break;
+
+            case 1: {
+                printf("Enter Roll No to Search: ");
+                scanf("%d", &key);
+                int pos = linearSearch(arr, key, n);
+                if (pos != -1)
+                    printf("Roll No %d attended the training (found at index %d)\n", key, pos);
+                else
+                    printf("Roll No %d did not attend the training.\n", key);
+                break;
+            }
+
+            case 2: {
+                printf("Enter Roll No to Search: ");
+                scanf("%d", &key);
+                int poss = binarySearch(arr, key, n);
+                if (poss != -1)
+                    printf("Roll No %d attended the training (found at index %d)\n", key, poss);
+                else
+                    printf("Roll No %d did not attend the training.\n", key);
+                break;
+            }
+
+            default:
+                printf("Enter a Valid Choice!\n");
+                break;
+        }
+    } while (choice != 0);
+
+    return 0;
+}
